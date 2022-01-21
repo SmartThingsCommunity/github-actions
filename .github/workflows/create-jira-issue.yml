@@ -1,0 +1,61 @@
+name: Issue to Jira When Labeled
+
+on:
+  workflow_call:
+    inputs:
+      trigger-label:
+        type: string
+        required: true
+      project:
+        type: string
+        required: true
+      fields:
+        type: string
+        required: false
+        default: ''
+    secrets:
+      JIRA_BASE_URL:
+        required: true
+      JIRA_USER_EMAIL:
+        required: true
+      JIRA_API_TOKEN:
+        required: true
+
+permissions:
+  issues: read
+
+jobs:
+  create-jira-issue:
+    if: ${{ github.event.label.name == inputs.trigger-label }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login to Jira
+        uses: atlassian/gajira-login@master
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+      # the following 2 steps determine the Jira issue type based on GitHub labels
+      - name: Issue is a bug
+        if: ${{ contains(github.event.issue.labels.*.name, 'bug') }}
+        run: echo "ISSUE_TYPE=Bug" >> $GITHUB_ENV
+
+      - name: Issue is not a bug
+        if: ${{ !contains(github.event.issue.labels.*.name, 'bug') }}
+        run: echo "ISSUE_TYPE=Story" >> $GITHUB_ENV
+
+      - name: Create issue
+        id: create
+        uses: atlassian/gajira-create@master
+        with:
+          project: ${{ inputs.project }}
+          issuetype: ${{ env.ISSUE_TYPE }}
+          summary: ${{ github.event.issue.title }}
+          description: ${{ github.event.issue.html_url }}
+          fields: ${{ inputs.fields }}
+
+      - name: Log created issue
+        run: echo "Issue ${{ steps.create.outputs.issue }} was created"
