@@ -1,12 +1,12 @@
 # github-actions
 
-## [Issue to Jira When Labeled](.github/workflows/create-jira-issue.yml)
+## [Issue to Jira When Labeled](.github/workflows/create-jira-issue.yaml)
 
 Clone a GitHub issue in Jira when a specific label is added.
 
 ### Usage
 
-Create a yaml file containing the following at `.github/workflows/create-jira-issue.yml`
+Create a yaml file containing the following at `.github/workflows/create-jira-issue.yaml`
 
 ```yaml
 on:
@@ -17,7 +17,7 @@ name: Create Jira Issue
 
 jobs:
   create-jira-issue:
-    uses: SmartThingsCommunity/github-actions/.github/workflows/create-jira-issue.yml@main
+    uses: SmartThingsCommunity/github-actions/.github/workflows/create-jira-issue.yaml@main
     with:
       trigger-label: example
       project: EXAMPLE
